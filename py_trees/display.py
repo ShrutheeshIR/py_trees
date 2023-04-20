@@ -21,18 +21,18 @@ strings or stdout.
 ##############################################################################
 
 import os
-import typing
 import uuid
 
 import pydot
 
 from . import behaviour, blackboard, common, composites, console, decorators, utilities
+# import console
 
 ##############################################################################
 # Symbols
 ##############################################################################
 
-Symbols = typing.Dict[typing.Any, str]
+# Symbols = typing.Dict[typing.Any, str]
 
 unicode_symbols = {
     "space": " ",
@@ -110,14 +110,14 @@ xhtml_symbols = {
 
 
 def _generate_text_tree(
-    root: behaviour.Behaviour,
-    show_only_visited: bool = False,
-    show_status: bool = False,
-    visited: typing.Optional[typing.Dict[uuid.UUID, common.Status]] = None,
-    previously_visited: typing.Optional[typing.Dict[uuid.UUID, common.Status]] = None,
-    indent: int = 0,
-    symbols: typing.Optional[Symbols] = None,
-) -> str:
+    root,
+    show_only_visited = False,
+    show_status = False,
+    visited = None,
+    previously_visited = None,
+    indent = 0,
+    symbols = None,
+):
     """
     Generate a text tree utilising the specified symbol formatter.
 
@@ -157,7 +157,7 @@ def _generate_text_tree(
     else:
         tip_id = uuid.uuid4()
 
-    def get_behaviour_type(b: behaviour.Behaviour) -> str:
+    def get_behaviour_type(b):
         if isinstance(b, composites.Parallel):
             return "parallel"
         if isinstance(b, decorators.Decorator):
@@ -168,7 +168,7 @@ def _generate_text_tree(
             return "selector_with_memory" if b.memory else "selector_without_memory"
         return "behaviour"
 
-    def style(s: str, font_weight: bool = False) -> str:
+    def style(s, font_weight = False):
         """
         Apply bold styling if specified.
 
@@ -176,23 +176,23 @@ def _generate_text_tree(
         single block of formatted text.
         """
         if font_weight:
-            return _symbols["bold"] + s + _symbols["bold_reset"]
+            return _symbols["bold"].encode('utf-8') + s + _symbols["bold_reset"].encode('utf-8')
         else:
             return s
 
     def generate_lines(
-        root: behaviour.Behaviour, internal_indent: int
-    ) -> typing.Iterator[str]:
-        def assemble_single_line(b: behaviour.Behaviour) -> str:
+        root, internal_indent
+    ):
+        def assemble_single_line(b):
             font_weight = True if (b.id == tip_id) else False
             s = ""
-            s += _symbols["space"] * 4 * internal_indent
-            s += style(_symbols[get_behaviour_type(b)], font_weight)
+            s += _symbols["space"].encode('utf-8') * 4 * internal_indent
+            s += style(_symbols[get_behaviour_type(b)].encode('utf-8'), font_weight)
             s += " "
 
             if show_status or b.id in _visited.keys():
                 s += style("{} [".format(b.name.replace("\n", " ")), font_weight)
-                s += style("{}".format(_symbols[b.status]), font_weight)
+                s += style("{}".format(_symbols[b.status].encode('utf-8')), font_weight)
                 message = "" if not b.feedback_message else " -- " + b.feedback_message
                 s += style("]" + message, font_weight)
             elif (
@@ -201,7 +201,7 @@ def _generate_text_tree(
                 and _previously_visited[b.id] == common.Status.RUNNING
             ):
                 s += style("{} [".format(b.name.replace("\n", " ")), font_weight)
-                s += style("{}".format(_symbols[b.status]), font_weight)
+                s += style("{}".format(_symbols[b.status].encode('utf-8')), font_weight)
                 s += style("]", font_weight)
             else:
                 s += style("{}".format(b.name.replace("\n", " ")), font_weight)
@@ -218,7 +218,7 @@ def _generate_text_tree(
                     for line in generate_lines(child, internal_indent + 1):
                         yield line
                 else:
-                    yield "{}...".format(_symbols["space"] * 4 * (internal_indent + 1))
+                    yield "{}...".format(_symbols["space"].encode('utf-8') * 4 * (internal_indent + 1))
 
     s = ""
     for line in generate_lines(root, indent):
@@ -228,13 +228,13 @@ def _generate_text_tree(
 
 
 def ascii_tree(
-    root: behaviour.Behaviour,
-    show_only_visited: bool = False,
-    show_status: bool = False,
-    visited: typing.Optional[typing.Dict[uuid.UUID, common.Status]] = None,
-    previously_visited: typing.Optional[typing.Dict[uuid.UUID, common.Status]] = None,
-    indent: int = 0,
-) -> str:
+    root,
+    show_only_visited = False,
+    show_status = False,
+    visited = None,
+    previously_visited = None,
+    indent = 0,
+):
     """
     Graffiti your console with ascii art for your trees.
 
@@ -306,13 +306,13 @@ def ascii_tree(
 
 
 def unicode_tree(
-    root: behaviour.Behaviour,
-    show_only_visited: bool = False,
-    show_status: bool = False,
-    visited: typing.Optional[typing.Dict[uuid.UUID, common.Status]] = None,
-    previously_visited: typing.Optional[typing.Dict[uuid.UUID, common.Status]] = None,
-    indent: int = 0,
-) -> str:
+    root,
+    show_only_visited = False,
+    show_status = False,
+    visited = None,
+    previously_visited = None,
+    indent = 0,
+):
     """
     Graffiti your console with unicode art for your trees.
 
@@ -348,13 +348,13 @@ def unicode_tree(
 
 
 def xhtml_tree(
-    root: behaviour.Behaviour,
-    show_only_visited: bool = False,
-    show_status: bool = False,
-    visited: typing.Optional[typing.Dict[uuid.UUID, common.Status]] = None,
-    previously_visited: typing.Optional[typing.Dict[uuid.UUID, common.Status]] = None,
-    indent: int = 0,
-) -> str:
+    root,
+    show_only_visited = False,
+    show_status = False,
+    visited = None,
+    previously_visited = None,
+    indent= 0,
+):
     """
     Paint your tree on an xhtml snippet.
 
@@ -404,12 +404,12 @@ def xhtml_tree(
 
 
 def dot_tree(
-    root: behaviour.Behaviour,
-    visibility_level: common.VisibilityLevel = common.VisibilityLevel.DETAIL,
-    collapse_decorators: bool = False,
-    with_blackboard_variables: bool = False,
-    with_qualified_names: bool = False,
-) -> pydot.Dot:
+    root,
+    visibility_level = common.VisibilityLevel.DETAIL,
+    collapse_decorators = False,
+    with_blackboard_variables = False,
+    with_qualified_names = False,
+):
     """
     Paint your tree on a pydot graph.
 
@@ -432,7 +432,7 @@ def dot_tree(
             print("{}".format(py_trees.display.dot_graph(root).to_string()))
     """
 
-    def get_node_attributes(node: behaviour.Behaviour) -> typing.Tuple[str, str, str]:
+    def get_node_attributes(node):
         blackbox_font_colours = {
             common.BlackBoxLevel.DETAIL: "dodgerblue",
             common.BlackBoxLevel.COMPONENT: "lawngreen",
@@ -460,7 +460,7 @@ def dot_tree(
             pass
         return attributes
 
-    def get_node_label(node_name: str, behaviour: behaviour.Behaviour) -> str:
+    def get_node_label(node_name, behaviour):
         """
         Create a more detailed string (when applicable) to use for the node name.
 
@@ -496,11 +496,11 @@ def dot_tree(
                 policy += "({})".format(", ".join(sorted(indices)))
             except AttributeError:
                 pass
-        node_label = f"{prefix} {node_name}" if prefix else node_name
+        node_label = "%s %s"%(prefix, node_name) if prefix else node_name
         if policy:
-            node_label += f"\n{str(policy)}"
+            node_label += "\n%s"%(str(policy))
         if with_qualified_names:
-            node_label += f"\n({utilities.get_fully_qualified_name(behaviour)})"
+            node_label += "\n(%s)"%(utilities.get_fully_qualified_name(behaviour))
         return node_label
 
     fontsize = 9
@@ -529,12 +529,12 @@ def dot_tree(
     behaviour_id_name_map = {root.id: root.name}
 
     def add_children_and_edges(
-        root: behaviour.Behaviour,
-        root_node: pydot.Node,
-        root_dot_name: str,
-        visibility_level: common.VisibilityLevel,
-        collapse_decorators: bool,
-    ) -> None:
+        root,
+        root_node,
+        root_dot_name,
+        visibility_level,
+        collapse_decorators,
+    ):
         if isinstance(root, decorators.Decorator) and collapse_decorators:
             return
         if visibility_level < root.blackbox_level:
@@ -570,7 +570,7 @@ def dot_tree(
         root, node_root, root.name, visibility_level, collapse_decorators
     )
 
-    def create_blackboard_client_node(blackboard_client_name: str) -> pydot.Node:
+    def create_blackboard_client_node(blackboard_client_name):
         return pydot.Node(
             name=blackboard_client_name,
             label=blackboard_client_name,
@@ -583,8 +583,8 @@ def dot_tree(
         )
 
     def add_blackboard_nodes(
-        blackboard_id_name_map: typing.Dict[uuid.UUID, str]
-    ) -> None:
+        blackboard_id_name_map
+    ):
         data = blackboard.Blackboard.storage
         metadata = blackboard.Blackboard.metadata
         clients = blackboard.Blackboard.clients
@@ -686,14 +686,14 @@ def dot_tree(
 
 
 def render_dot_tree(
-    root: behaviour.Behaviour,
-    visibility_level: common.VisibilityLevel = common.VisibilityLevel.DETAIL,
-    collapse_decorators: bool = False,
-    name: typing.Optional[str] = None,
-    target_directory: typing.Optional[str] = None,
-    with_blackboard_variables: bool = False,
-    with_qualified_names: bool = False,
-) -> typing.Dict[str, str]:
+    root,
+    visibility_level = common.VisibilityLevel.DETAIL,
+    collapse_decorators = False,
+    name = None,
+    target_directory = None,
+    with_blackboard_variables = False,
+    with_qualified_names = False,
+):
     """
     Render the dot tree to dot, svg, png. files.
 
@@ -744,7 +744,7 @@ def render_dot_tree(
     filename_wo_extension = utilities.get_valid_filename(
         filename_wo_extension_to_convert
     )
-    filenames: typing.Dict[str, str] = {}
+    filenames = {}
     for extension, writer in {
         "dot": graph.write,
         "png": graph.write_png,
@@ -764,16 +764,14 @@ def render_dot_tree(
 
 
 def _generate_text_blackboard(
-    key_filter: typing.Optional[typing.Union[typing.Set[str], typing.List[str]]] = None,
-    regex_filter: typing.Optional[str] = None,
-    client_filter: typing.Optional[
-        typing.Union[typing.Set[uuid.UUID], typing.List[uuid.UUID]]
-    ] = None,
-    keys_to_highlight: typing.Optional[typing.List[str]] = None,
-    display_only_key_metadata: bool = False,
-    indent: int = 0,
-    symbols: typing.Optional[Symbols] = None,
-) -> str:
+    key_filter = None,
+    regex_filter = None,
+    client_filter = None,
+    keys_to_highlight = None,
+    display_only_key_metadata = False,
+    indent = 0,
+    symbols = None,
+):
     """
     Generate a text blackboard.
 
@@ -795,7 +793,7 @@ def _generate_text_blackboard(
 
     .. seealso:: :meth:`py_trees.display.unicode_blackboard`
     """
-    _keys_to_highlight: typing.List[str] = (
+    _keys_to_highlight = (
         keys_to_highlight if keys_to_highlight else []
     )
     _symbols = (
@@ -804,24 +802,24 @@ def _generate_text_blackboard(
         else (unicode_symbols if console.has_unicode() else ascii_symbols)
     )
 
-    def style(s: str, font_weight: bool = False) -> str:
+    def style(s, font_weight = False):
         if font_weight:
             return _symbols["bold"] + s + _symbols["bold_reset"]
         else:
             return s
 
     def generate_lines(
-        storage: typing.Dict[str, typing.Any],
-        metadata: typing.Optional[typing.Dict[str, blackboard.KeyMetaData]],
-        indent: int,
-    ) -> typing.Iterator[str]:
+        storage,
+        metadata,
+        indent,
+    ):
         def assemble_value_line(
-            key: str,
-            value: typing.Any,
-            apply_highlight: bool,
-            indent: str,
-            key_width: int,
-        ) -> str:
+            key,
+            value,
+            apply_highlight,
+            indent,
+            key_width,
+        ):
             s = ""
             lines = ("{0}".format(value)).split("\n")
             if len(lines) > 1:
@@ -848,12 +846,12 @@ def _generate_text_blackboard(
             return style(s, apply_highlight) + console.reset
 
         def assemble_metadata_line(
-            key: str,
-            metadata: blackboard.KeyMetaData,
-            apply_highlight: bool,
-            indent: str,
-            key_width: int,
-        ) -> str:
+            key,
+            metadata,
+            apply_highlight,
+            indent,
+            key_width,
+        ):
             s = ""
             s += console.cyan + indent + "{0: <{1}}".format(key, key_width + 1) + ": "
             client_uuids = list(
@@ -877,8 +875,8 @@ def _generate_text_blackboard(
             s += console.yellow + "{}\n".format(", ".join(metastrings))
             return style(s, apply_highlight) + console.reset
 
-        text_indent: str = _symbols["space"] * (4 + indent)
-        key_width: int = 0
+        text_indent = _symbols["space"] * (4 + indent)
+        key_width = 0
         for key in storage.keys():
             key_width = len(key) if len(key) > key_width else key_width
         for key in sorted(storage.keys()):
@@ -899,7 +897,7 @@ def _generate_text_blackboard(
                     key_width=key_width,
                 )
 
-    blackboard_metadata: typing.Optional[typing.Dict[str, blackboard.KeyMetaData]] = (
+    blackboard_metadata = (
         blackboard.Blackboard.metadata if display_only_key_metadata else None
     )
 
@@ -913,7 +911,7 @@ def _generate_text_blackboard(
         all_keys = blackboard.Blackboard.keys_filtered_by_clients(client_filter)
     else:
         all_keys = blackboard.Blackboard.keys()
-    blackboard_storage: typing.Dict[str, typing.Any] = {}
+    blackboard_storage = {}
     for key in all_keys:
         try:
             blackboard_storage[key] = blackboard.Blackboard.storage[key]
@@ -923,16 +921,16 @@ def _generate_text_blackboard(
     title = "Clients" if display_only_key_metadata else "Data"
     s = (
         console.green
-        + _symbols["space"] * indent
+        + _symbols["space"].encode('utf-8') * indent
         + "Blackboard {}\n".format(title)
         + console.reset
     )
     if key_filter:
-        s += _symbols["space"] * (indent + 2) + "Filter: '{}'\n".format(key_filter)
+        s += _symbols["space"].encode('utf-8') * (indent + 2) + "Filter: '{}'\n".format(key_filter)
     elif regex_filter:
-        s += _symbols["space"] * (indent + 2) + "Filter: '{}'\n".format(regex_filter)
+        s += _symbols["space"].encode('utf-8') * (indent + 2) + "Filter: '{}'\n".format(regex_filter)
     elif client_filter:
-        s += _symbols["space"] * (indent + 2) + "Filter: {}\n".format(
+        s += _symbols["space"].encode('utf-8') * (indent + 2) + "Filter: {}\n".format(
             str(client_filter)
         )
     for line in generate_lines(blackboard_storage, blackboard_metadata, indent):
@@ -941,15 +939,13 @@ def _generate_text_blackboard(
 
 
 def ascii_blackboard(
-    key_filter: typing.Optional[typing.Union[typing.Set[str], typing.List[str]]] = None,
-    regex_filter: typing.Optional[str] = None,
-    client_filter: typing.Optional[
-        typing.Union[typing.Set[uuid.UUID], typing.List[uuid.UUID]]
-    ] = None,
-    keys_to_highlight: typing.Optional[typing.List[str]] = None,
-    display_only_key_metadata: bool = False,
-    indent: int = 0,
-) -> str:
+    key_filter = None,
+    regex_filter = None,
+    client_filter = None,
+    keys_to_highlight = None,
+    display_only_key_metadata = False,
+    indent = 0,
+):
     """
     Graffiti your console with ascii art for your blackboard.
 
@@ -983,15 +979,13 @@ def ascii_blackboard(
 
 
 def unicode_blackboard(
-    key_filter: typing.Optional[typing.Union[typing.Set[str], typing.List[str]]] = None,
-    regex_filter: typing.Optional[str] = None,
-    client_filter: typing.Optional[
-        typing.Union[typing.Set[uuid.UUID], typing.List[uuid.UUID]]
-    ] = None,
-    keys_to_highlight: typing.Optional[typing.List[str]] = None,
-    display_only_key_metadata: bool = False,
-    indent: int = 0,
-) -> str:
+    key_filter = None,
+    regex_filter = None,
+    client_filter = None,
+    keys_to_highlight = None,
+    display_only_key_metadata = False,
+    indent = 0,
+):
     """
     Graffiti your console with unicode art for your blackboard.
 
@@ -1025,11 +1019,11 @@ def unicode_blackboard(
 
 
 def _generate_text_activity(
-    activity_stream: typing.Optional[typing.List[blackboard.ActivityItem]] = None,
-    show_title: bool = True,
-    indent: int = 0,
-    symbols: typing.Optional[Symbols] = None,
-) -> str:
+    activity_stream = None,
+    show_title = True,
+    indent = 0,
+    symbols = None,
+):
     """
     Loop (with a generator) over the activity stream.
 
@@ -1040,7 +1034,7 @@ def _generate_text_activity(
     """
     if symbols is None:
         symbols = unicode_symbols if console.has_unicode() else ascii_symbols
-    space = symbols["space"]
+    space = symbols["space"].encode('utf-8')
     if activity_stream is None and blackboard.Blackboard.activity_stream is not None:
         activity_stream = blackboard.Blackboard.activity_stream.data
     s = ""
@@ -1083,7 +1077,7 @@ def _generate_text_activity(
             s += "|" + space
             if item.activity_type == blackboard.ActivityType.READ.value:
                 s += (
-                    symbols["left_arrow"]
+                    symbols["left_arrow"].encode('utf-8')
                     + space
                     + "{}\n".format(
                         utilities.truncate(str(item.current_value), value_width)
@@ -1091,13 +1085,13 @@ def _generate_text_activity(
                 )
             elif item.activity_type == blackboard.ActivityType.WRITE.value:
                 s += console.green
-                s += symbols["right_arrow"] + space
+                s += symbols["right_arrow"].encode('utf-8') + space
                 s += "{}\n".format(
                     utilities.truncate(str(item.current_value), value_width)
                 )
             elif item.activity_type == blackboard.ActivityType.ACCESSED.value:
                 s += console.yellow
-                s += symbols["left_right_arrow"] + space
+                s += symbols["left_right_arrow"].encode('utf-8') + space
                 s += "{}\n".format(
                     utilities.truncate(str(item.current_value), value_width)
                 )
@@ -1119,7 +1113,7 @@ def _generate_text_activity(
                 s += "\n"
             elif item.activity_type == blackboard.ActivityType.INITIALISED.value:
                 s += console.green
-                s += symbols["right_arrow"] + space
+                s += symbols["right_arrow"].encode('utf-8') + space
                 s += "{}\n".format(
                     utilities.truncate(str(item.current_value), value_width)
                 )
@@ -1131,10 +1125,10 @@ def _generate_text_activity(
 
 
 def unicode_blackboard_activity_stream(
-    activity_stream: typing.Optional[typing.List[blackboard.ActivityItem]] = None,
-    indent: int = 0,
-    show_title: bool = True,
-) -> str:
+    activity_stream = None,
+    indent = 0,
+    show_title = True,
+):
     """
     Pretty print the blackboard stream to console.
 

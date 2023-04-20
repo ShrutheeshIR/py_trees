@@ -23,7 +23,6 @@ runs its own method on the behaviour to do as it wishes - logging, introspecting
 # Imports
 ##############################################################################
 
-import typing
 import uuid
 
 from . import behaviour, blackboard, common, display
@@ -47,18 +46,18 @@ class VisitorBase(object):
         full: flag to indicate whether it should be used to visit only traversed nodes or the entire tree
     """
 
-    def __init__(self, full: bool = False):
-        self.full: bool = full
+    def __init__(self, full = False):
+        self.full = full
 
-    def initialise(self) -> None:
+    def initialise(self):
         """Override if any resetting of variables needs to be performed between ticks (i.e. visitations)."""
         pass
 
-    def finalise(self) -> None:
+    def finalise(self):
         """Override if any work needs to be performed after ticks (i.e. showing data)."""
         pass
 
-    def run(self, behaviour: behaviour.Behaviour) -> None:
+    def run(self, behaviour):
         """
         Converse with the behaviour.
 
@@ -79,10 +78,10 @@ class DebugVisitor(VisitorBase):
     Logging is done with the behaviour's logger.
     """
 
-    def __init__(self) -> None:
+    def __init__(self):
         super(DebugVisitor, self).__init__(full=False)
 
-    def run(self, behaviour: behaviour.Behaviour) -> None:
+    def run(self, behaviour):
         """
         Log behaviour information on the debug channel.
 
@@ -128,15 +127,15 @@ class SnapshotVisitor(VisitorBase):
                  this visitor to trigger logging of a tree serialisation.
     """
 
-    def __init__(self) -> None:
-        super().__init__(full=False)
+    def __init__(self):
+        super(SnapshotVisitor, self).__init__(full=False)
         self.changed = False
-        self.visited: typing.Dict[uuid.UUID, common.Status] = {}
-        self.previously_visited: typing.Dict[uuid.UUID, common.Status] = {}
-        self.visited_blackboard_keys: typing.Set[str] = set()
-        self.visited_blackboard_client_ids: typing.Set[uuid.UUID] = set()
+        self.visited = {}
+        self.previously_visited = {}
+        self.visited_blackboard_keys = set()
+        self.visited_blackboard_client_ids = set()
 
-    def initialise(self) -> None:
+    def initialise(self):
         """Store the last snapshot for comparison with the next incoming snapshot.
 
         This should get called before a tree ticks.
@@ -147,7 +146,7 @@ class SnapshotVisitor(VisitorBase):
         self.visited_blackboard_keys = set()
         self.visited_blackboard_client_ids = set()
 
-    def run(self, behaviour: behaviour.Behaviour) -> None:
+    def run(self, behaviour):
         """
         Catch the id, status and store it.
 
@@ -188,26 +187,26 @@ class DisplaySnapshotVisitor(SnapshotVisitor):
 
     def __init__(
         self,
-        display_only_visited_behaviours: bool = False,
-        display_blackboard: bool = False,
-        display_activity_stream: bool = False,
+        display_only_visited_behaviours = False,
+        display_blackboard = False,
+        display_activity_stream = False,
     ):
-        super().__init__()
+        super(DisplaySnapshotVisitor, self).__init__()
         self.display_only_visited_behaviours = display_only_visited_behaviours
         self.display_blackboard = display_blackboard
         self.display_activity_stream = display_activity_stream
         if self.display_activity_stream:
             blackboard.Blackboard.enable_activity_stream()
 
-    def initialise(self) -> None:
+    def initialise(self):
         """Reset and initialise all variables."""
-        self.root: typing.Optional[behaviour.Behaviour] = None
-        super().initialise()
+        self.root = None
+        super(DisplaySnapshotVisitor, self).initialise()
         if self.display_activity_stream:
             if blackboard.Blackboard.activity_stream is not None:
                 blackboard.Blackboard.activity_stream.clear()
 
-    def run(self, behaviour: behaviour.Behaviour) -> None:
+    def run(self, behaviour):
         """
         Track the root of the tree and run :class:`~py_trees.visitors.SnapshotVisitor`.
 
@@ -215,9 +214,9 @@ class DisplaySnapshotVisitor(SnapshotVisitor):
             behaviour: behaviour being visited.
         """
         self.root = behaviour  # last behaviour visited will always be the root
-        super().run(behaviour)
+        super(DisplaySnapshotVisitor, self).run(behaviour)
 
-    def finalise(self) -> None:
+    def finalise(self):
         """Print a summary on stdout after all behaviours have been visited."""
         if self.root is not None:
             print(

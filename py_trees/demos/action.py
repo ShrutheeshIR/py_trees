@@ -27,7 +27,7 @@ import atexit
 import multiprocessing
 import multiprocessing.connection
 import time
-import typing
+# import typing
 
 import py_trees.common
 import py_trees.console as console
@@ -37,7 +37,7 @@ import py_trees.console as console
 ##############################################################################
 
 
-def description() -> str:
+def description():
     """
     Print description and usage information about the program.
 
@@ -69,7 +69,7 @@ def description() -> str:
     return s
 
 
-def epilog() -> typing.Optional[str]:
+def epilog():
     """
     Print a noodly epilog for --help.
 
@@ -86,7 +86,7 @@ def epilog() -> typing.Optional[str]:
         return None
 
 
-def command_line_argument_parser() -> argparse.ArgumentParser:
+def command_line_argument_parser():
     """
     Process command line arguments.
 
@@ -100,7 +100,7 @@ def command_line_argument_parser() -> argparse.ArgumentParser:
     )
 
 
-def planning(pipe_connection: multiprocessing.connection.Connection) -> None:
+def planning(pipe_connection):
     """Emulate a (potentially) long running external process.
 
     Args:
@@ -139,12 +139,12 @@ class Action(py_trees.behaviour.Behaviour):
     Key point - this behaviour itself should not be doing any work!
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name):
         """Configure the name of the behaviour."""
         super(Action, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
 
-    def setup(self, **kwargs: int) -> None:
+    def setup(self, **kwargs):
         """Kickstart the separate process this behaviour will work with.
 
         Ordinarily this process will be already running. In this case,
@@ -160,7 +160,7 @@ class Action(py_trees.behaviour.Behaviour):
         atexit.register(self.planning.terminate)
         self.planning.start()
 
-    def initialise(self) -> None:
+    def initialise(self):
         """Reset a counter variable."""
         self.logger.debug(
             "%s.initialise()->sending new goal" % (self.__class__.__name__)
@@ -168,7 +168,7 @@ class Action(py_trees.behaviour.Behaviour):
         self.parent_connection.send(["new goal"])
         self.percentage_completion = 0
 
-    def update(self) -> py_trees.common.Status:
+    def update(self):
         """Increment the counter, monitor and decide on a new status."""
         new_status = py_trees.common.Status.RUNNING
         if self.parent_connection.poll():
@@ -194,7 +194,7 @@ class Action(py_trees.behaviour.Behaviour):
             )
         return new_status
 
-    def terminate(self, new_status: py_trees.common.Status) -> None:
+    def terminate(self, new_status):
         """Nothing to clean up in this example."""
         self.logger.debug(
             "%s.terminate()[%s->%s]"
@@ -207,7 +207,7 @@ class Action(py_trees.behaviour.Behaviour):
 ##############################################################################
 
 
-def main() -> None:
+def main():
     """Entry point for the demo script."""
     command_line_argument_parser().parse_args()
 
@@ -224,3 +224,6 @@ def main() -> None:
         print("\n")
     except KeyboardInterrupt:
         pass
+
+if __name__ == '__main__':
+    main()

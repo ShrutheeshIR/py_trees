@@ -11,15 +11,15 @@
 A py_trees demo.
 
 .. argparse::
-   :module: py_trees.demos.sequence
+   :module: py_trees.demos.selector
    :func: command_line_argument_parser
-   :prog: py-trees-demo-sequence
+   :prog: py-trees-demo-selector
 
-.. graphviz:: dot/demo-sequence.dot
+.. graphviz:: dot/demo-selector.dot
 
-.. image:: images/sequence.gif
+.. image:: images/selector.gif
+
 """
-
 ##############################################################################
 # Imports
 ##############################################################################
@@ -27,6 +27,7 @@ A py_trees demo.
 import argparse
 import sys
 import time
+# import typing
 
 import py_trees
 import py_trees.console as console
@@ -43,16 +44,19 @@ def description():
     Returns:
        the program description string
     """
-    content = "Demonstrates sequences in action.\n\n"
-    content += (
-        "A sequence is populated with 2-tick jobs that are allowed to run through to\n"
+    content = (
+        "Higher priority switching and interruption in the children of a selector.\n"
     )
-    content += "completion.\n"
-
+    content += "\n"
+    content += "In this example the higher priority child is setup to fail initially,\n"
+    content += "falling back to the continually running second child. On the third\n"
+    content += (
+        "tick, the first child succeeds and cancels the hitherto running child.\n"
+    )
     if py_trees.console.has_colours:
         banner_line = console.green + "*" * 79 + "\n" + console.reset
         s = banner_line
-        s += console.bold_white + "Sequences".center(79) + "\n" + console.reset
+        s += console.bold_white + "Selectors".center(79) + "\n" + console.reset
         s += banner_line
         s += "\n"
         s += content
@@ -105,17 +109,19 @@ def create_root():
     Returns:
         the root behaviour
     """
-    root = py_trees.composites.Sequence(name="Sequence", memory=True)
-    for action in ["Action 1", "Action 2", "Action 3"]:
-        rssss = py_trees.behaviours.StatusQueue(
-            name=action,
-            queue=[
-                py_trees.common.Status.RUNNING,
-                py_trees.common.Status.SUCCESS,
-            ],
-            eventually=py_trees.common.Status.SUCCESS,
-        )
-        root.add_child(rssss)
+    root = py_trees.composites.Selector(name="Selector", memory=False)
+    ffs = py_trees.behaviours.StatusQueue(
+        name="FFS",
+        queue=[
+            py_trees.common.Status.FAILURE,
+            py_trees.common.Status.FAILURE,
+            py_trees.common.Status.SUCCESS,
+        ],
+        eventually=py_trees.common.Status.SUCCESS,
+    )
+    always_running = py_trees.behaviours.Running(name="Running")
+    root.add_children([ffs, always_running])
+    
     return root
 
 
@@ -142,8 +148,10 @@ def main():
     ####################
     # Execute
     ####################
-    root.setup_with_descendants()
-    for i in range(1, 6):
+    tree = py_trees.trees.BehaviourTree(root)
+    tree.setup(timeout = 10.0)
+    # root.setup_with_descendants()
+    for i in range(1, 4):
         try:
             print("\n--------- Tick {0} ---------\n".format(i))
             root.tick_once()

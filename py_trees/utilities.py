@@ -13,19 +13,16 @@
 # Imports
 ##############################################################################
 
-from __future__ import annotations
 
 import multiprocessing
 import os
 import re
 import traceback
-import typing
 
 ##############################################################################
 # Python Helpers
 ##############################################################################
 
-C = typing.TypeVar("C", bound=typing.Callable)
 
 # TODO: This currently doesn't work well with mypy - dynamic typing
 # is not its thing. Need to find a way to make this work without
@@ -35,7 +32,7 @@ C = typing.TypeVar("C", bound=typing.Callable)
 # error: "Callable[[], Any]" has no attribute "counter"  [attr-defined]
 
 
-def static_variables(**kwargs: typing.Any) -> typing.Callable[[C], C]:
+def static_variables(**kwargs):
     """
     Attach initialised static variables to a python method.
 
@@ -47,7 +44,7 @@ def static_variables(**kwargs: typing.Any) -> typing.Callable[[C], C]:
            print("Counter: {}".format(foo.counter))
     """
 
-    def decorate(func: C) -> C:
+    def decorate(func):
         for k in kwargs:
             setattr(func, k, kwargs[k])
         return func
@@ -56,7 +53,7 @@ def static_variables(**kwargs: typing.Any) -> typing.Callable[[C], C]:
 
 
 @static_variables(primitives={bool, str, int, float})
-def is_primitive(incoming: typing.Any) -> bool:
+def is_primitive(incoming):
     """
     Check if an incoming argument is a primitive type with no esoteric accessors.
 
@@ -70,7 +67,7 @@ def is_primitive(incoming: typing.Any) -> bool:
     return type(incoming) in is_primitive.primitives  # type: ignore[attr-defined]
 
 
-def truncate(original: str, length: int) -> str:
+def truncate(original, length):
     """
     Provide an elided (...) version of a string if it is longer than desired.
 
@@ -90,12 +87,12 @@ def truncate(original: str, length: int) -> str:
 class Process(multiprocessing.Process):
     """Convenience wrapper around multiprocessing.Process."""
 
-    def __init__(self, *args: typing.Any, **kwargs: typing.Any):
+    def __init__(self, *args, **kwargs):
         multiprocessing.Process.__init__(self, *args, **kwargs)
         self._pconn, self._cconn = multiprocessing.Pipe()
         self._exception = None
 
-    def run(self) -> None:
+    def run(self):
         """Start the process, handle exceptions if needed."""
         try:
             multiprocessing.Process.run(self)
@@ -105,7 +102,7 @@ class Process(multiprocessing.Process):
             self._cconn.send((e, tb))
 
     @property
-    def exception(self) -> typing.Any:
+    def exception(self):
         """
         Check the connection, if there is an error, reflect it as an exception.
 
@@ -117,7 +114,7 @@ class Process(multiprocessing.Process):
         return self._exception
 
 
-def which(program: str) -> typing.Optional[str]:
+def which(program):
     """
     Call the command line 'which' tool (convenience wrapper).
 
@@ -128,7 +125,7 @@ def which(program: str) -> typing.Optional[str]:
         path to the program or None if it doesnt exist.
     """
 
-    def is_exe(fpath: str) -> bool:
+    def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
     fpath, unused_fname = os.path.split(program)
@@ -145,7 +142,7 @@ def which(program: str) -> typing.Optional[str]:
     return None
 
 
-def get_valid_filename(s: str) -> str:
+def get_valid_filename(s):
     """
     Clean up and style a string so that it can be used as a filename.
 
@@ -172,7 +169,7 @@ def get_valid_filename(s: str) -> str:
     return re.sub(r"(?u)[^-\w.]", "", s)
 
 
-def get_fully_qualified_name(instance: object) -> str:
+def get_fully_qualified_name(instance):
     """
     Retrieve the fully qualified name of an object.
 

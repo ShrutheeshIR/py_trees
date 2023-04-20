@@ -27,7 +27,7 @@ A py_trees demo.
 import argparse
 import sys
 import time
-import typing
+# import typing
 
 import py_trees
 import py_trees.console as console
@@ -37,7 +37,7 @@ import py_trees.console as console
 ##############################################################################
 
 
-def description() -> str:
+def description():
     """
     Print description and usage information about the program.
 
@@ -67,7 +67,7 @@ def description() -> str:
     return s
 
 
-def epilog() -> typing.Optional[str]:
+def epilog():
     """
     Print a noodly epilog for --help.
 
@@ -84,7 +84,7 @@ def epilog() -> typing.Optional[str]:
         return None
 
 
-def command_line_argument_parser() -> argparse.ArgumentParser:
+def command_line_argument_parser():
     """
     Process command line arguments.
 
@@ -102,7 +102,7 @@ def command_line_argument_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def create_root() -> py_trees.behaviour.Behaviour:
+def create_root():
     """
     Create the root behaviour and it's subtree.
 
@@ -129,7 +129,7 @@ def create_root() -> py_trees.behaviour.Behaviour:
 ##############################################################################
 
 
-def main() -> None:
+def main():
     """Entry point for the demo script."""
     args = command_line_argument_parser().parse_args()
     print(description())
@@ -158,3 +158,6 @@ def main() -> None:
         except KeyboardInterrupt:
             break
     print("\n")
+
+if __name__ == '__main__':
+    main()

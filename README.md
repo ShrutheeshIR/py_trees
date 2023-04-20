@@ -1,5 +1,7 @@
 # Py Trees
 
+NOTE: This is a Python2 version of the latest 2.3.0 `py_trees` (so that it can be used with ROS melodic)
+
 [[About](#about)] [[What's New?](#whats-new)] [[Documentation](#documentation)] [[Getting Started](#getting-started)] [[Next Steps](#next-steps)] [[Releases](#releases)]
 
 ----

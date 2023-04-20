@@ -59,19 +59,19 @@ on one, all or a subset thereof.
 # Imports
 ##############################################################################
 
-import abc
 import itertools
-import typing
 import uuid
 
 from . import behaviour, common
+# import behaviour
+# import common
 
 ##############################################################################
 # Composites
 ##############################################################################
 
 
-class Composite(behaviour.Behaviour, abc.ABC):
+class Composite(behaviour.Behaviour):
     """
     The parent class to all composite behaviours.
 
@@ -82,8 +82,8 @@ class Composite(behaviour.Behaviour, abc.ABC):
 
     def __init__(
         self,
-        name: str,
-        children: typing.Optional[typing.List[behaviour.Behaviour]] = None,
+        name,
+        children = None,
     ):
         super(Composite, self).__init__(name)
         if children is not None:
@@ -91,13 +91,12 @@ class Composite(behaviour.Behaviour, abc.ABC):
                 self.add_child(child)
         else:
             self.children = []
-        self.current_child: typing.Optional[behaviour.Behaviour] = None
+        self.current_child = None
 
     ############################################
     # Virtual
     ############################################
-    @abc.abstractmethod
-    def tick(self) -> typing.Iterator[behaviour.Behaviour]:
+    def tick(self):
         """
         Tick the composite.
 
@@ -112,7 +111,7 @@ class Composite(behaviour.Behaviour, abc.ABC):
     # Unused
     ############################################
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Unused update method.
 
@@ -150,7 +149,7 @@ class Composite(behaviour.Behaviour, abc.ABC):
     # Overrides
     ############################################
 
-    def stop(self, new_status: common.Status = common.Status.INVALID) -> None:
+    def stop(self, new_status):
         """
         Provide common stop-level functionality for all composites.
 
@@ -180,7 +179,7 @@ class Composite(behaviour.Behaviour, abc.ABC):
         self.status = new_status
         self.iterator = self.tick()
 
-    def tip(self) -> typing.Optional[behaviour.Behaviour]:
+    def tip(self):
         """
         Recursive function to extract the last running node of the tree.
 
@@ -190,13 +189,13 @@ class Composite(behaviour.Behaviour, abc.ABC):
         if self.current_child is not None:
             return self.current_child.tip()
         else:
-            return super().tip()
+            return super(Composite, self).tip()
 
     ############################################
     # Children
     ############################################
 
-    def add_child(self, child: behaviour.Behaviour) -> uuid.UUID:
+    def add_child(self, child):
         """
         Add a child.
 
@@ -225,8 +224,8 @@ class Composite(behaviour.Behaviour, abc.ABC):
         return child.id
 
     def add_children(
-        self, children: typing.List[behaviour.Behaviour]
-    ) -> behaviour.Behaviour:
+        self, children
+    ):
         """
         Append a list of children to the current list.
 
@@ -237,7 +236,7 @@ class Composite(behaviour.Behaviour, abc.ABC):
             self.add_child(child)
         return self
 
-    def remove_child(self, child: behaviour.Behaviour) -> int:
+    def remove_child(self, child):
         """
         Remove the child behaviour from this composite.
 
@@ -258,7 +257,7 @@ class Composite(behaviour.Behaviour, abc.ABC):
         child.parent = None
         return child_index
 
-    def remove_all_children(self) -> None:
+    def remove_all_children(self):
         """Remove all children. Makes sure to stop each child if necessary."""
         self.current_child = None
         for child in self.children:
@@ -270,8 +269,8 @@ class Composite(behaviour.Behaviour, abc.ABC):
         del self.children[:]
 
     def replace_child(
-        self, child: behaviour.Behaviour, replacement: behaviour.Behaviour
-    ) -> None:
+        self, child, replacement
+    ):
         """
         Replace the child behaviour with another.
 
@@ -288,7 +287,7 @@ class Composite(behaviour.Behaviour, abc.ABC):
         self.insert_child(replacement, child_index)
         child.parent = None
 
-    def remove_child_by_id(self, child_id: uuid.UUID) -> None:
+    def remove_child_by_id(self, child_id):
         """
         Remove the child with the specified id.
 
@@ -306,7 +305,7 @@ class Composite(behaviour.Behaviour, abc.ABC):
                 "child was not found with the specified id [%s]" % child_id
             )
 
-    def prepend_child(self, child: behaviour.Behaviour) -> uuid.UUID:
+    def prepend_child(self, child):
         """
         Prepend the child before all other children.
 
@@ -320,7 +319,7 @@ class Composite(behaviour.Behaviour, abc.ABC):
         child.parent = self
         return child.id
 
-    def insert_child(self, child: behaviour.Behaviour, index: int) -> uuid.UUID:
+    def insert_child(self, child, index):
         """
         Insert child at the specified index.
 
@@ -379,14 +378,14 @@ class Selector(Composite):
 
     def __init__(
         self,
-        name: str,
-        memory: bool,
-        children: typing.Optional[typing.List[behaviour.Behaviour]] = None,
+        name,
+        memory = False,
+        children = None,
     ):
         super(Selector, self).__init__(name, children)
         self.memory = memory
 
-    def tick(self) -> typing.Iterator[behaviour.Behaviour]:
+    def tick(self):
         """
         Customise the tick behaviour for a selector.
 
@@ -461,15 +460,14 @@ class Selector(Composite):
             self.current_child = None
         yield self
 
-    def stop(self, new_status: common.Status = common.Status.INVALID) -> None:
+    def stop(self, new_status):
         """
         Ensure that children are appropriately stopped and update status.
 
         Args:
             new_status : the composite is transitioning to this new status
         """
-        self.logger.debug(
-            f"{self.__class__.__name__}.stop()[{self.status}->{new_status}]"
+        self.logger.debug("%s.stop()[%s->%s]"%(self.__class__.__name__, self.status, new_status)
         )
         Composite.stop(self, new_status)
 
@@ -515,14 +513,14 @@ class Sequence(Composite):
 
     def __init__(
         self,
-        name: str,
-        memory: bool,
-        children: typing.Optional[typing.List[behaviour.Behaviour]] = None,
+        name,
+        memory = False,
+        children = None,
     ):
         super(Sequence, self).__init__(name, children)
         self.memory = memory
 
-    def tick(self) -> typing.Iterator[behaviour.Behaviour]:
+    def tick(self):
         """
         Tick over the children.
 
@@ -579,16 +577,14 @@ class Sequence(Composite):
         self.stop(common.Status.SUCCESS)
         yield self
 
-    def stop(self, new_status: common.Status = common.Status.INVALID) -> None:
+    def stop(self, new_status):
         """
         Ensure that children are appropriately stopped and update status.
 
         Args:
             new_status : the composite is transitioning to this new status
         """
-        self.logger.debug(
-            f"{self.__class__.__name__}.stop()[{self.status}->{new_status}]"
-        )
+        self.logger.debug("%s.stop()[%s->%s]"%(self.__class__.__name__, self.status, new_status))
         Composite.stop(self, new_status)
 
 
@@ -645,9 +641,9 @@ class Parallel(Composite):
 
     def __init__(
         self,
-        name: str,
-        policy: common.ParallelPolicy.Base,
-        children: typing.Optional[typing.List[behaviour.Behaviour]] = None,
+        name,
+        policy,
+        children = None,
     ):
         """
         Initialise the behaviour with name, policy and a list of children.
@@ -660,7 +656,7 @@ class Parallel(Composite):
         super(Parallel, self).__init__(name, children)
         self.policy = policy
 
-    def setup(self, **kwargs: int) -> None:
+    def setup(self, **kwargs):
         """
         Detect before ticking whether the policy configuration is invalid.
 
@@ -675,7 +671,7 @@ class Parallel(Composite):
         self.logger.debug("%s.setup()" % (self.__class__.__name__))
         self.validate_policy_configuration()
 
-    def tick(self) -> typing.Iterator[behaviour.Behaviour]:
+    def tick(self):
         """
         Tick over the children.
 
@@ -759,15 +755,14 @@ class Parallel(Composite):
         self.status = new_status
         yield self
 
-    def stop(self, new_status: common.Status = common.Status.INVALID) -> None:
+    def stop(self, new_status):
         """
         Ensure that any running children are stopped.
 
         Args:
             new_status : the composite is transitioning to this new status
         """
-        self.logger.debug(
-            f"{self.__class__.__name__}.stop()[{self.status}->{new_status}]"
+        self.logger.debug("%s.stop()[%s->%s]"%(self.__class__.__name__, self.status, new_status)
         )
 
         # clean up dangling (running) children
@@ -778,7 +773,7 @@ class Parallel(Composite):
                 child.stop(common.Status.INVALID)
         Composite.stop(self, new_status)
 
-    def validate_policy_configuration(self) -> None:
+    def validate_policy_configuration(self):
         """
         Validate the currently stored policy.
 

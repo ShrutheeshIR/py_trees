@@ -17,7 +17,6 @@ import copy
 import functools
 import operator
 import random
-import typing
 
 from . import behaviour, blackboard, common, meta
 
@@ -26,7 +25,7 @@ from . import behaviour, blackboard, common, meta
 ##############################################################################
 
 
-def success(self: behaviour.Behaviour) -> common.Status:
+def success(self):
     """Define a functor for an always succeeding behaviour.
 
     Args:
@@ -40,7 +39,7 @@ def success(self: behaviour.Behaviour) -> common.Status:
     return common.Status.SUCCESS
 
 
-def failure(self: behaviour.Behaviour) -> common.Status:
+def failure(self):
     """Define a functor for an always failing behaviour.
 
     Args:
@@ -54,7 +53,7 @@ def failure(self: behaviour.Behaviour) -> common.Status:
     return common.Status.FAILURE
 
 
-def running(self: behaviour.Behaviour) -> common.Status:
+def running(self):
     """Define a functor for an always running behaviour.
 
     Args:
@@ -68,7 +67,7 @@ def running(self: behaviour.Behaviour) -> common.Status:
     return common.Status.RUNNING
 
 
-def dummy(self: behaviour.Behaviour) -> common.Status:
+def dummy(self):
     """Define a functor for a crash test dummy behaviour.
 
     Args:
@@ -122,13 +121,13 @@ class Periodic(behaviour.Behaviour):
     .. note:: It does not reset the count when initialising.
     """
 
-    def __init__(self, name: str, n: int):
+    def __init__(self, name, n):
         super(Periodic, self).__init__(name)
         self.count = 0
         self.period = n
         self.response = common.Status.RUNNING
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Increment counter and use to decide the current status.
 
@@ -168,16 +167,16 @@ class StatusQueue(behaviour.Behaviour):
 
     def __init__(
         self,
-        name: str,
-        queue: typing.List[common.Status],
-        eventually: typing.Optional[common.Status],
+        name,
+        queue,
+        eventually,
     ):
         super(StatusQueue, self).__init__(name)
         self.queue = queue
         self.eventually = eventually
         self.current_queue = copy.copy(queue)
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Pop from the queue or rotate / switch to eventual if the end has been reached.
 
@@ -194,7 +193,7 @@ class StatusQueue(behaviour.Behaviour):
             status = self.current_queue.pop(0)
         return status
 
-    def terminate(self, new_status: common.Status) -> None:
+    def terminate(self, new_status):
         """
         Log debug information.
 
@@ -222,12 +221,12 @@ class SuccessEveryN(behaviour.Behaviour):
        :meth:`py_trees.decorators.FailureIsRunning`
     """
 
-    def __init__(self, name: str, n: int):
+    def __init__(self, name, n):
         super(SuccessEveryN, self).__init__(name)
         self.count = 0
         self.every_n = n
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Increment the counter and decide on success/failure from that.
 
@@ -262,17 +261,17 @@ class TickCounter(behaviour.Behaviour):
         completion_status: status to switch to once the counter has expired
     """
 
-    def __init__(self, name: str, duration: int, completion_status: common.Status):
-        super().__init__(name=name)
+    def __init__(self, name, duration, completion_status):
+        super(TickCounter, self).__init__(name=name)
         self.completion_status = completion_status
         self.duration = duration
         self.counter = 0
 
-    def initialise(self) -> None:
+    def initialise(self):
         """Reset the tick counter."""
         self.counter = 0
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Increment the tick counter and check to see if it should complete.
 
@@ -319,10 +318,10 @@ class BlackboardToStatus(behaviour.Behaviour):
 
     def __init__(
         self,
-        name: str,
-        variable_name: str,
+        name,
+        variable_name,
     ):
-        super().__init__(name=name)
+        super(BlackboardToStatus, self).__init__(name=name)
         name_components = variable_name.split(".")
         self.key = name_components[0]
         self.key_attributes = ".".join(
@@ -332,7 +331,7 @@ class BlackboardToStatus(behaviour.Behaviour):
         self.blackboard = self.attach_blackboard_client()
         self.blackboard.register_key(key=self.key, access=common.Access.READ)
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Check for existence.
 
@@ -344,9 +343,9 @@ class BlackboardToStatus(behaviour.Behaviour):
         status = self.blackboard.get(self.variable_name)
         if not isinstance(status, common.Status):
             raise TypeError(
-                f"{self.variable_name} is not of type py_trees.common.Status"
+                "%s is not of type py_trees.common.Status"%({self.variable_name})
             )
-        self.feedback_message = f"{self.variable_name}: {status}"
+        self.feedback_message = "%s: %s"%(self.variable_name, status)
         return status
 
 
@@ -371,10 +370,10 @@ class CheckBlackboardVariableExists(behaviour.Behaviour):
 
     def __init__(
         self,
-        name: str,
-        variable_name: str,
+        name,
+        variable_name,
     ):
-        super().__init__(name=name)
+        super(CheckBlackboardVariableExists, self).__init__(name=name)
         self.variable_name = variable_name
         name_components = variable_name.split(".")
         self.key = name_components[0]
@@ -384,7 +383,7 @@ class CheckBlackboardVariableExists(behaviour.Behaviour):
         self.blackboard = self.attach_blackboard_client()
         self.blackboard.register_key(key=self.key, access=common.Access.READ)
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Check for existence.
 
@@ -421,12 +420,12 @@ class WaitForBlackboardVariable(CheckBlackboardVariableExists):
 
     def __init__(
         self,
-        name: str,
-        variable_name: str,
+        name,
+        variable_name,
     ):
-        super().__init__(name=name, variable_name=variable_name)
+        super(WaitForBlackboardVariable, self).__init__(name=name, variable_name=variable_name)
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Check for existence, wait otherwise.
 
@@ -434,7 +433,7 @@ class WaitForBlackboardVariable(CheckBlackboardVariableExists):
              :data:`~py_trees.common.Status.SUCCESS` if key found, :data:`~py_trees.common.Status.RUNNING` otherwise.
         """
         self.logger.debug("%s.update()" % self.__class__.__name__)
-        new_status = super().update()
+        new_status = super(WaitForBlackboardVariable, self).update()
         # CheckBlackboardExists only returns SUCCESS || FAILURE
         if new_status == common.Status.SUCCESS:
             self.feedback_message = "'{}' found".format(self.key)
@@ -457,13 +456,13 @@ class UnsetBlackboardVariable(behaviour.Behaviour):
         name: name of the behaviour
     """
 
-    def __init__(self, name: str, key: str):
-        super().__init__(name=name)
+    def __init__(self, name, key):
+        super(UnsetBlackboardVariable, self).__init__(name=name)
         self.key = key
         self.blackboard = self.attach_blackboard_client()
         self.blackboard.register_key(key=self.key, access=common.Access.WRITE)
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Unset and always return success.
 
@@ -490,12 +489,12 @@ class SetBlackboardVariable(behaviour.Behaviour):
 
     def __init__(
         self,
-        name: str,
-        variable_name: str,
-        variable_value: typing.Union[typing.Any, typing.Callable[[], typing.Any]],
-        overwrite: bool,
+        name,
+        variable_name,
+        variable_value,
+        overwrite,
     ):
-        super().__init__(name=name)
+        super(SetBlackboardVariable, self).__init__(name=name)
         self.variable_name = variable_name
         name_components = variable_name.split(".")
         self.key = name_components[0]
@@ -509,7 +508,7 @@ class SetBlackboardVariable(behaviour.Behaviour):
         )
         self.overwrite = overwrite
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Attempt to set the stored value in the requested blackboard variable.
 
@@ -549,8 +548,8 @@ class CheckBlackboardVariableValue(behaviour.Behaviour):
         The python `operator module`_ includes many useful comparison operations.
     """
 
-    def __init__(self, name: str, check: common.ComparisonExpression):
-        super().__init__(name=name)
+    def __init__(self, name, check):
+        super(CheckBlackboardVariableValue, self).__init__(name=name)
         self.check = check
         name_components = self.check.variable.split(".")
         self.key = name_components[0]
@@ -560,7 +559,7 @@ class CheckBlackboardVariableValue(behaviour.Behaviour):
         self.blackboard = self.attach_blackboard_client()
         self.blackboard.register_key(key=self.key, access=common.Access.READ)
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Check for existence, or the appropriate match on the expected value.
 
@@ -576,8 +575,7 @@ class CheckBlackboardVariableValue(behaviour.Behaviour):
                     value = operator.attrgetter(self.key_attributes)(value)
                 except AttributeError:
                     self.feedback_message = (
-                        "blackboard key-value pair exists, but the value does not "
-                        f"have the requested nested attributes [{self.key}]"
+                        "blackboard key-value pair exists, but the value does not have the requested nested attributes [%s]"%(self.key)
                     )
                     return common.Status.FAILURE
         except KeyError:
@@ -632,12 +630,12 @@ class WaitForBlackboardVariableValue(CheckBlackboardVariableValue):
 
     def __init__(
         self,
-        name: str,
-        check: common.ComparisonExpression,
+        name,
+        check,
     ):
-        super().__init__(check=check, name=name)
+        super(CheckBlackboardVariableValue, self).__init__(check=check, name=name)
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Check for existence, or the appropriate match on the expected value.
 
@@ -645,7 +643,7 @@ class WaitForBlackboardVariableValue(CheckBlackboardVariableValue):
              :class:`~py_trees.common.Status`: :data:`~py_trees.common.Status.FAILURE`
                  if not matched, :data:`~py_trees.common.Status.SUCCESS` otherwise.
         """
-        new_status = super().update()
+        new_status = super(CheckBlackboardVariableValue, self).update()
         if new_status == common.Status.FAILURE:
             return common.Status.RUNNING
         else:
@@ -675,12 +673,12 @@ class CheckBlackboardVariableValues(behaviour.Behaviour):
 
     def __init__(
         self,
-        name: str,
-        checks: typing.List[common.ComparisonExpression],
-        operator: typing.Callable[[bool, bool], bool],
-        namespace: typing.Optional[str] = None,
+        name,
+        checks,
+        operator,
+        namespace = None,
     ):
-        super().__init__(name=name)
+        super(CheckBlackboardVariableValues, self).__init__(name=name)
         self.checks = checks
         self.operator = operator
         self.blackboard = self.attach_blackboard_client()
@@ -702,7 +700,7 @@ class CheckBlackboardVariableValues(behaviour.Behaviour):
                     key=str(counter), access=common.Access.WRITE
                 )
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Apply comparison checks on each and a logical check across all variables.
 
@@ -755,7 +753,7 @@ class ProbabilisticBehaviour(behaviour.Behaviour):
 
     """
 
-    def __init__(self, name: str, weights: typing.Optional[typing.List[float]] = None):
+    def __init__(self, name, weights = None):
         if weights is not None and (type(weights) is not list or len(weights) != 3):
             raise ValueError(
                 "Either all or none of the probabilities must be specified"
@@ -770,7 +768,7 @@ class ProbabilisticBehaviour(behaviour.Behaviour):
         ]
         self._weights = weights if weights is not None else [1.0, 1.0, 1.0]
 
-    def update(self) -> common.Status:
+    def update(self):
         """
         Return a status based on a probability distribution.
 

@@ -15,7 +15,6 @@
 
 import enum
 import sys
-import typing
 
 ##############################################################################
 # General
@@ -74,7 +73,7 @@ class ParallelPolicy(object):
     class Base(object):
         """Base class for parallel policies. Should never be used directly."""
 
-        def __init__(self, synchronise: bool = False):
+        def __init__(self, synchronise = False):
             """
             Configure the policy to be synchronised or otherwise.
 
@@ -94,7 +93,7 @@ class ParallelPolicy(object):
         the policy criteria is met, or one of the children returns status :data:`~py_trees.common.Status.FAILURE`.
         """
 
-        def __init__(self, synchronise: bool = True):
+        def __init__(self, synchronise = True):
             """
             Policy configuration.
 
@@ -102,7 +101,7 @@ class ParallelPolicy(object):
                 synchronise (:obj:`bool`): stop ticking of children with status
                     :py:data:`~py_trees.common.Status.SUCCESS` until the policy criteria is met
             """
-            super().__init__(synchronise=synchronise)
+            super(SuccessOnAll, self).__init__(synchronise=synchronise)
 
     class SuccessOnOne(Base):
         """Success depends on just one child (can be any child).
@@ -112,9 +111,9 @@ class ParallelPolicy(object):
         and the remainder are :py:data:`~py_trees.common.Status.RUNNING`
         """
 
-        def __init__(self) -> None:
+        def __init__(self):
             """No configuration necessary for this policy."""
-            super().__init__(synchronise=False)
+            super(SuccessOnOne, self).__init__(synchronise=False)
 
     class SuccessOnSelected(Base):
         """Success depends on an explicitly selected set of children behaviours.
@@ -128,8 +127,8 @@ class ParallelPolicy(object):
         def __init__(
             self,
             # TODO should be behaviour.Behaviour, but cyclic imports -> redesign
-            children: typing.List[typing.Any],
-            synchronise: bool = True,
+            children,
+            synchronise = True,
         ):
             """
             Policy configuration.
@@ -139,7 +138,7 @@ class ParallelPolicy(object):
                 synchronise: stop ticking of children with status
                 :py:data:`~py_trees.common.Status.SUCCESS` until the policy criteria is met
             """
-            super().__init__(synchronise=synchronise)
+            super(SuccessOnSelected, self).__init__(synchronise=synchronise)
             self.children = children
 
 
@@ -183,7 +182,7 @@ class ClearingPolicy(enum.IntEnum):
 #
 # NB: Widening all the way to Any results in virally plaguing downstream
 # with the ramifications of Any (e.g. any-return).
-ComparisonV = typing.TypeVar("ComparisonV")
+# ComparisonV = typing.TypeVar("ComparisonV")
 
 
 class ComparisonExpression(object):
@@ -214,9 +213,9 @@ class ComparisonExpression(object):
 
     def __init__(
         self,
-        variable: str,
-        value: ComparisonV,
-        operator: typing.Callable[[ComparisonV, ComparisonV], bool],
+        variable,
+        value,
+        operator,
     ):
         """Initialise variables.
 
@@ -280,7 +279,7 @@ visibility_level_strings = ["all", "detail", "component", "big_picture"]
 """Convenient string representations to use for command line input (amongst other things)."""
 
 
-def string_to_visibility_level(level: str) -> VisibilityLevel:
+def string_to_visibility_level(level):
     """Will convert a string to a visibility level.
 
     Note that it will quietly return ALL if

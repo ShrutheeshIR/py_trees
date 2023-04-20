@@ -41,7 +41,7 @@ import sys
 ##############################################################################
 
 
-def has_unicode(encoding: str = sys.stdout.encoding) -> bool:
+def has_unicode(encoding = sys.stdout.encoding):
     """
     Define whether the specified encoding has unicode symbols.
 
@@ -67,8 +67,8 @@ def has_unicode(encoding: str = sys.stdout.encoding) -> bool:
 
 
 def define_symbol_or_fallback(
-    original: str, fallback: str, encoding: str = sys.stdout.encoding
-) -> str:
+    original, fallback, encoding = sys.stdout.encoding
+):
     """
     Go unicode, or fallback to ascii.
 
@@ -91,23 +91,23 @@ def define_symbol_or_fallback(
     return original
 
 
-circle = "\u26ac"
-lightning_bolt = "\u26A1"
-double_vertical_line = "\u2016"
-check_mark = "\u2713"
-multiplication_x = "\u2715"
-left_arrow = "\u2190"  # u'\u2190'
-right_arrow = "\u2192"
-left_right_arrow = "\u2194"
-forbidden_circle = "\u29B8"
-circled_m = "\u24c2"
+circle = u"\u26ac"
+lightning_bolt = u"\u26A1"
+double_vertical_line = u"\u2016"
+check_mark = u"\u2713"
+multiplication_x = u"\u2715"
+left_arrow = u"\u2190"  # u'\u2190'
+right_arrow = u"\u2192"
+left_right_arrow = u"\u2194"
+forbidden_circle = u"\u29B8"
+circled_m = u"\u24c2"
 
 ##############################################################################
 # Keypress
 ##############################################################################
 
 
-def read_single_keypress() -> str:
+def read_single_keypress():
     """Wait for a single keypress on stdin.
 
     This is a silly function to call if you need to do it a lot because it has
@@ -122,7 +122,7 @@ def read_single_keypress() -> str:
         KeyboardInterrupt: if CTRL-C was pressed (keycode 0x03)
     """
 
-    def read_single_keypress_unix() -> str:
+    def read_single_keypress_unix():
         """For Unix case, where fcntl, termios is available."""
         import fcntl
         import termios
@@ -171,7 +171,7 @@ def read_single_keypress() -> str:
         fcntl.fcntl(fd, fcntl.F_SETFL, flags_save)
         return ret
 
-    def read_single_keypress_windows() -> str:
+    def read_single_keypress_windows():
         """Implement keypress functionality for windows, which can't use fcntl and termios."""
         import msvcrt  # noqa
 
@@ -199,7 +199,7 @@ def read_single_keypress() -> str:
 ##############################################################################
 
 
-def console_has_colours() -> bool:
+def console_has_colours():
     """Detect if the console (stdout) has colourising capability."""
     if os.environ.get("PY_TREES_DISABLE_COLORS"):
         return False
@@ -283,7 +283,7 @@ colours = [
 """List of all available colours."""
 
 
-def pretty_print(msg: str, colour: str = white) -> None:
+def pretty_print(msg, colour = white):
     """Pretty print a coloured message.
 
     Args:
@@ -297,7 +297,7 @@ def pretty_print(msg: str, colour: str = white) -> None:
         sys.stdout.write(msg)
 
 
-def pretty_println(msg: str, colour: str = white) -> None:
+def pretty_println(msg, colour = white):
     """Pretty print a coloured message with a newline.
 
     Args:
@@ -317,7 +317,7 @@ def pretty_println(msg: str, colour: str = white) -> None:
 ##############################################################################
 
 
-def banner(msg: str) -> None:
+def banner(msg):
     """Print a banner with centred text to stdout.
 
     Args:
@@ -328,7 +328,7 @@ def banner(msg: str) -> None:
     print(green + 80 * "*" + "\n" + reset)
 
 
-def debug(msg: str) -> None:
+def debug(msg):
     """Print a debug message.
 
     Args:
@@ -337,7 +337,7 @@ def debug(msg: str) -> None:
     print(green + msg + reset)
 
 
-def warning(msg: str) -> None:
+def warning(msg):
     """Print a warning message.
 
     Args:
@@ -346,7 +346,7 @@ def warning(msg: str) -> None:
     print(yellow + msg + reset)
 
 
-def info(msg: str) -> None:
+def info(msg):
     """Print an info message.
 
     Args:
@@ -355,7 +355,7 @@ def info(msg: str) -> None:
     print(msg)
 
 
-def error(msg: str) -> None:
+def error(msg):
     """Print an error message.
 
     Args:
@@ -364,7 +364,7 @@ def error(msg: str) -> None:
     print(red + msg + reset)
 
 
-def logdebug(message: str) -> None:
+def logdebug(message):
     """
     Prefixes ``[DEBUG]`` and colours the message green.
 
@@ -374,7 +374,7 @@ def logdebug(message: str) -> None:
     print(green + "[DEBUG] " + message + reset)
 
 
-def loginfo(message: str) -> None:
+def loginfo(message):
     """
     Prefixes ``[ INFO]`` to the message.
 
@@ -384,7 +384,7 @@ def loginfo(message: str) -> None:
     print("[ INFO] " + message)
 
 
-def logwarn(message: str) -> None:
+def logwarn(message):
     """
     Prefixes ``[ WARN]`` and colours the message yellow.
 
@@ -394,7 +394,7 @@ def logwarn(message: str) -> None:
     print(yellow + "[ WARN] " + message + reset)
 
 
-def logerror(message: str) -> None:
+def logerror(message):
     """
     Prefixes ``[ERROR]`` and colours the message red.
 
@@ -404,7 +404,7 @@ def logerror(message: str) -> None:
     print(red + "[ERROR] " + message + reset)
 
 
-def logfatal(message: str) -> None:
+def logfatal(message):
     """
     Prefixes ``[FATAL]`` and colours the message bold red.
 
@@ -436,7 +436,7 @@ if __name__ == "__main__":
     pretty_print("red\n", red)
     print("some normal text")
     print(cyan + "    Name" + reset + ": " + yellow + "Dude" + reset)
-    print(f"Has Unicode: {has_unicode()}")
+    print("Has Unicode: {}".format(has_unicode()))
     print("Unicode Characters:\n")
     print("lightning_bolt: {}".format(lightning_bolt))
     print("double_vertical_line: {}".format(double_vertical_line))
