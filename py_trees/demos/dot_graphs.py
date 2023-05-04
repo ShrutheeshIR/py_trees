@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 #
 # License: BSD
-#   https://raw.githubusercontent.com/splintered-reality/py_trees/devel/LICENSE
+#   https://raw.githubusercontent.com/stonier/py_trees/devel/LICENSE
 #
 ##############################################################################
 # Documentation
 ##############################################################################
 
 """
-A py_trees demo.
-
 .. argparse::
    :module: py_trees.demos.dot_graphs
    :func: command_line_argument_parser
@@ -25,9 +23,8 @@ A py_trees demo.
 
 import argparse
 import subprocess
-import typing
-
 import py_trees
+
 import py_trees.console as console
 
 ##############################################################################
@@ -35,18 +32,13 @@ import py_trees.console as console
 ##############################################################################
 
 
-def description() -> str:
-    """
-    Print description and usage information about the program.
-
-    Returns:
-       the program description string
-    """
+def description():
     name = "py-trees-demo-dot-graphs"
     content = "Renders a dot graph for a simple tree, with blackboxes.\n"
     if py_trees.console.has_colours:
         banner_line = console.green + "*" * 79 + "\n" + console.reset
-        s = banner_line
+        s = "\n"
+        s += banner_line
         s += console.bold_white + "Dot Graphs".center(79) + "\n" + console.reset
         s += banner_line
         s += "\n"
@@ -59,38 +51,10 @@ def description() -> str:
         s += "\n"
         s += console.bold + "    With Varying Visibility Levels" + console.reset + "\n"
         s += "\n"
-        s += (
-            console.cyan
-            + "        {0}".format(name)
-            + console.yellow
-            + " --level=all"
-            + console.reset
-            + "\n"
-        )
-        s += (
-            console.cyan
-            + "        {0}".format(name)
-            + console.yellow
-            + " --level=detail"
-            + console.reset
-            + "\n"
-        )
-        s += (
-            console.cyan
-            + "        {0}".format(name)
-            + console.yellow
-            + " --level=component"
-            + console.reset
-            + "\n"
-        )
-        s += (
-            console.cyan
-            + "        {0}".format(name)
-            + console.yellow
-            + " --level=big_picture"
-            + console.reset
-            + "\n"
-        )
+        s += console.cyan + "        {0}".format(name) + console.yellow + " --level=all" + console.reset + "\n"
+        s += console.cyan + "        {0}".format(name) + console.yellow + " --level=detail" + console.reset + "\n"
+        s += console.cyan + "        {0}".format(name) + console.yellow + " --level=component" + console.reset + "\n"
+        s += console.cyan + "        {0}".format(name) + console.yellow + " --level=big_picture" + console.reset + "\n"
         s += "\n"
         s += banner_line
     else:
@@ -98,65 +62,38 @@ def description() -> str:
     return s
 
 
-def epilog() -> typing.Optional[str]:
-    """
-    Print a noodly epilog for --help.
-
-    Returns:
-       the noodly message
-    """
+def epilog():
     if py_trees.console.has_colours:
-        return (
-            console.cyan
-            + "And his noodly appendage reached forth to tickle the blessed...\n"
-            + console.reset
-        )
+        return console.cyan + "And his noodly appendage reached forth to tickle the blessed...\n" + console.reset
     else:
         return None
 
 
-def command_line_argument_parser() -> argparse.ArgumentParser:
-    """
-    Process command line arguments.
-
-    Returns:
-        the argument parser
-    """
-    parser = argparse.ArgumentParser(
-        description=description(),
-        epilog=epilog(),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument(
-        "-l",
-        "--level",
-        action="store",
-        default="fine_detail",
-        choices=["all", "fine_detail", "detail", "component", "big_picture"],
-        help="visibility level",
-    )
+def command_line_argument_parser():
+    parser = argparse.ArgumentParser(description=description(),
+                                     epilog=epilog(),
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     )
+    parser.add_argument('-l', '--level', action='store',
+                        default='fine_detail',
+                        choices=['all', 'fine_detail', 'detail', 'component', 'big_picture'],
+                        help='visibility level')
     return parser
 
 
-def create_tree(level: str) -> py_trees.behaviour.Behaviour:
-    """
-    Create the root behaviour and it's subtree.
-
-    Returns:
-        the root behaviour
-    """
-    root = py_trees.composites.Selector(name="Demo Dot Graphs %s" % level, memory=False)
-    first_blackbox = py_trees.composites.Sequence(name="BlackBox 1", memory=True)
+def create_tree(level):
+    root = py_trees.composites.Selector("Demo Dot Graphs %s" % level)
+    first_blackbox = py_trees.composites.Sequence("BlackBox 1")
     first_blackbox.add_child(py_trees.behaviours.Running("Worker"))
     first_blackbox.add_child(py_trees.behaviours.Running("Worker"))
     first_blackbox.add_child(py_trees.behaviours.Running("Worker"))
     first_blackbox.blackbox_level = py_trees.common.BlackBoxLevel.BIG_PICTURE
-    second_blackbox = py_trees.composites.Sequence(name="Blackbox 2", memory=True)
+    second_blackbox = py_trees.composites.Sequence("Blackbox 2")
     second_blackbox.add_child(py_trees.behaviours.Running("Worker"))
     second_blackbox.add_child(py_trees.behaviours.Running("Worker"))
     second_blackbox.add_child(py_trees.behaviours.Running("Worker"))
     second_blackbox.blackbox_level = py_trees.common.BlackBoxLevel.COMPONENT
-    third_blackbox = py_trees.composites.Sequence(name="Blackbox 3", memory=True)
+    third_blackbox = py_trees.composites.Sequence("Blackbox 3")
     third_blackbox.add_child(py_trees.behaviours.Running("Worker"))
     third_blackbox.add_child(py_trees.behaviours.Running("Worker"))
     third_blackbox.add_child(py_trees.behaviours.Running("Worker"))
@@ -171,9 +108,10 @@ def create_tree(level: str) -> py_trees.behaviour.Behaviour:
 # Main
 ##############################################################################
 
-
-def main() -> None:
-    """Entry point for the demo script."""
+def main():
+    """
+    Entry point for the demo script.
+    """
     args = command_line_argument_parser().parse_args()
     args.enum_level = py_trees.common.string_to_visibility_level(args.level)
     print(description())
@@ -189,7 +127,5 @@ def main() -> None:
             pass
     else:
         print("")
-        console.logerror(
-            "No xdot viewer found, skipping display [hint: sudo apt install xdot]"
-        )
+        console.logerror("No xdot viewer found, skipping display [hint: sudo apt install xdot]")
         print("")

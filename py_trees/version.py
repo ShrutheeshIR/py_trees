@@ -1,17 +1,18 @@
 #
 # License: BSD
-#   https://raw.githubusercontent.com/splintered-reality/py_trees/devel/LICENSE
+#   https://raw.githubusercontent.com/stonier/py_trees/devel/LICENSE
 #
 ##############################################################################
 # Documentation
 ##############################################################################
 
-"""Package version number."""
+"""
+Version number provided separately here so there is easy access for the module,
+setup.py and sphinx.
+"""
 
 ##############################################################################
 # Version
 ##############################################################################
 
-# When changing, Also update setup.py and package.xml
-# TODO: use pkg_resources to fetch the version from setup.py
-__version__ = "2.2.3"
+__version__ = '0.7.7'

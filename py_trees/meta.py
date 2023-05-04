@@ -56,9 +56,6 @@ import time
 from . import behaviour
 from . import common
 from . import composites
-# import behaviour
-# import common
-# import composites
 
 ##############################################################################
 # Utility Methods

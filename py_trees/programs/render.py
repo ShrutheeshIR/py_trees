@@ -26,7 +26,6 @@ import argparse
 import importlib
 import json
 import sys
-import typing
 
 import py_trees
 import py_trees.console as console
@@ -36,7 +35,7 @@ import py_trees.console as console
 ##############################################################################
 
 
-def examples() -> typing.List[str]:
+def examples():
     """
     Usage examples as a string message for --help's description.
 
@@ -55,7 +54,7 @@ def examples() -> typing.List[str]:
     return examples
 
 
-def description() -> str:
+def description():
     """
     Print description and usage information about the program.
 
@@ -88,7 +87,7 @@ def description() -> str:
     return s
 
 
-def epilog() -> typing.Optional[str]:
+def epilog():
     """
     Print a noodly epilog for --help.
 
@@ -105,7 +104,7 @@ def epilog() -> typing.Optional[str]:
         return None
 
 
-def command_line_argument_parser() -> argparse.ArgumentParser:
+def command_line_argument_parser():
     """
     Process command line arguments.
 
@@ -165,7 +164,7 @@ def command_line_argument_parser() -> argparse.ArgumentParser:
 ##############################################################################
 
 
-def main() -> None:
+def main():
     """Entry point."""
     args = command_line_argument_parser().parse_args()
     args.enum_level = py_trees.common.string_to_visibility_level(args.level)
